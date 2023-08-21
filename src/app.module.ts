@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
+import { UserModule } from './user/user.module';
+import { MongooseModule } from './database/mongoose.module';
 
 @Module({
-  imports: [],
+  imports: [RabbitMQModule, UserModule, MongooseModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}

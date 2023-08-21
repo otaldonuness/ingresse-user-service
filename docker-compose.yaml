@@ -1,0 +1,41 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # User Service instance
+  user_service:
+    build: .
+    env_file:
+      - .env.development
+    networks:
+      - ingresse-network
+
+  # Grafana
+  grafana:
+    image: grafana/grafana
+    ports:
+      - '8081:3000'
+    networks:
+      - ingresse-network
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - '9091:9090'
+    depends_on:
+      - user_service
+    networks:
+      - ingresse-network
+    volumes:
+      - prometheus-data:/prometheus
+
+networks:
+  ingresse-network:
+    external: true
+
+volumes:
+  grafana-storage:
+  prometheus-data:
