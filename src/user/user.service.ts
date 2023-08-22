@@ -28,26 +28,33 @@ export class UserService {
     }
   }
 
-  async createUser(
-    data: CreateUserDTO,
-  ): Promise<{ status: number; message: string }> {
+  async createUser(createUserDto: CreateUserDTO): Promise<{
+    status: number;
+    message: string;
+  }> {
     const existingUser = await this.userModel
-      .findOne({ $or: [{ username: data.username }, { email: data.email }] })
+      .findOne({
+        $or: [
+          { username: createUserDto.username },
+          { email: createUserDto.email },
+        ],
+      })
       .exec();
 
     if (existingUser) {
       throw new ConflictException('Username or email already exists');
     }
 
-    const hashedPassword = await this.hashPassword(data.password);
+    const hashedPassword = await this.hashPassword(createUserDto.password);
 
     const user = new this.userModel({
-      ...data,
+      ...createUserDto,
       hashedPassword,
     });
 
     try {
       await user.save();
+
       return {
         status: HttpStatus.CREATED,
         message: 'User created successfully',

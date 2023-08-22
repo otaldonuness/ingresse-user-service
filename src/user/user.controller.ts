@@ -2,15 +2,16 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, RpcException } from '@nestjs/microservices';
 import { UserService } from './user.service';
 import { CreateUserDTO } from './dto/create-user.dto';
+import { UpdateUserDTO } from './dto/update-user.dto';
 
 @Controller()
 export class UserController {
   constructor(private userService: UserService) {}
 
   @MessagePattern({ cmd: 'create-user' })
-  async createUser(data: CreateUserDTO) {
+  async createUser(createUserDto: CreateUserDTO) {
     try {
-      const result = await this.userService.createUser(data);
+      const result = await this.userService.createUser(createUserDto);
 
       return { status: result.status, message: result.message };
     } catch (error) {
@@ -102,9 +103,12 @@ export class UserController {
   }
 
   @MessagePattern({ cmd: 'update-user' })
-  async updateUser(data: { userId: string; user: CreateUserDTO }) {
+  async updateUser(updateUserDto: { userId: string; user: UpdateUserDTO }) {
     try {
-      const result = await this.userService.updateUser(data.userId, data.user);
+      const result = await this.userService.updateUser(
+        updateUserDto.userId,
+        updateUserDto.user,
+      );
 
       return { status: result.status, message: result.message };
     } catch (error) {
