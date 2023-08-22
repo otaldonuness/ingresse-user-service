@@ -31,6 +31,14 @@ export class UserService {
   async createUser(
     data: CreateUserDTO,
   ): Promise<{ status: number; message: string }> {
+    const existingUser = await this.userModel
+      .findOne({ $or: [{ username: data.username }, { email: data.email }] })
+      .exec();
+
+    if (existingUser) {
+      throw new ConflictException('Username or email already exists');
+    }
+
     const hashedPassword = await this.hashPassword(data.password);
 
     const user = new this.userModel({
@@ -45,9 +53,7 @@ export class UserService {
         message: 'User created successfully',
       };
     } catch (error) {
-      if (error.code === 11000) {
-        throw new ConflictException('Username or email already exists');
-      }
+      this.logger.error({ message: 'Failed to create user', error });
       throw new InternalServerErrorException('Something went wrong');
     }
   }
@@ -63,6 +69,28 @@ export class UserService {
       return user;
     } catch (error) {
       throw new InternalServerErrorException('Failed to retrieve user');
+    }
+  }
+
+  async findUserByUsername(username: string): Promise<User | null> {
+    try {
+      const user = await this.userModel.findOne({ username }).exec();
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to retrieve user');
+    }
+  }
+
+  async findAllUsers(): Promise<User[]> {
+    try {
+      return await this.userModel.find().exec();
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to retrieve users');
     }
   }
 
